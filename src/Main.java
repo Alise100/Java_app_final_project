@@ -1,7 +1,17 @@
-import java.util.Scanner; //pievienojam klassi lai lasīt ko ievada lietotājs
+import java.util.Scanner; //importējam klassi lai lasīt ko ievada lietotājs
+import java.text.Normalizer;
 
+    public class Main {
 
-public class Main {
+    //metode teksta normalizācijai( lai garumzīmes neskaitās) un zemam reģistram
+    public static String normalizeString(String input) {
+        if (input == null) {
+            return null;
+        }
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD); //nfd atbils par garumzīmem
+        String withoutDiacritics = normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        return withoutDiacritics.toLowerCase();
+    }
 
     //Metode lai pirmais burts būtu liels
 
@@ -28,16 +38,33 @@ public class Main {
         Scanner scanner = new Scanner(System.in); //scanner objekts, kurš lasa ko ievada lietotājs
         String repeat; // repeat mainīga kurā saglabājas lietotāja atbilde par atkārtoto registrāciju
 
-        // Sākam do-while ciklu
+        // Sākam do-while ciklu pilnai reģistrācijai
+        //Vārds
         do {
+            String firstName;
+            do {   //do-while vārdam
                 System.out.print("Ievadiet jūsu vārdu: ");
-                String firstName = scanner.nextLine(); //nextLine turpina darbību no jaunas rindas
-                firstName = capitalize(firstName);
+                firstName = scanner.nextLine();
+                    //vārda validācija par garumu
+                    if (firstName.length() < 2) {
+                    System.out.println("Vārdam jābūt vismaz 2 simbolus garam! Ievadiet vēlreiz: ");
+                }
+            } while (firstName.length() < 2);
+            firstName = capitalize(firstName);
 
+        //Uzvārds
+            String lastName;
+            do {
                 System.out.print("Ievadiet jūsu uzvārdu: ");
-                String lastName = scanner.nextLine();
-                lastName = capitalize(lastName);
+                lastName = scanner.nextLine();
+                    if (lastName.length() < 2) {
+                    System.out.println("Uzvārdam jābūt vismaz 2 simbolus garam! Ievadiet vēlreiz: ");
+                }
+            } while (lastName.length() < 2);
+            lastName = capitalize(lastName);
 
+
+            //Vecums
                 System.out.print("Ievadiet jūsu vecumu: ");
                 int age = scanner.nextInt();
 
@@ -46,6 +73,7 @@ public class Main {
                     age = scanner.nextInt();
                 }
 
+            //Augums
                 System.out.print("Ievadiet jūsu augumu metros: ");
                 double height = scanner.nextDouble();
 
@@ -54,8 +82,9 @@ public class Main {
                         height = scanner.nextDouble();
                     }
 
-                    System.out.print("Ievadiet jūsu svaru kilogrammos: ");
-                    double weight = scanner.nextDouble();
+            //Svars
+                System.out.print("Ievadiet jūsu svaru kilogrammos: ");
+                double weight = scanner.nextDouble();
 
                     while (weight < 0) { // cikls atkārtosies, ja būs ievadīts negatīvs svars
                         System.out.print("Svars nevar būt negatīvs. Ievadiet vēlreiz: ");
@@ -64,19 +93,54 @@ public class Main {
 
                     scanner.nextLine();
 
-                    System.out.print("Ievadiet jūsu dzīvesvietas valsti: ");
-                    String country = scanner.nextLine();
-                    country = capitalize(country);
 
-                    System.out.print("Ievadiet jūsu mēneša ienākumus EUR: ");
-                    double income = scanner.nextDouble();
-                    scanner.nextLine(); // Поглощаем перевод строки после nextDouble()
+        //Valsts
+            String country;
+            do {
+                System.out.print("Ievadiet jūsu dzīvesvietas valsti: ");
+                country = scanner.nextLine();
+                    if (country == null || country.trim().isEmpty()) {
+                    System.out.println("Valsts nevar būt tukša! Ievadiet vēlreiz: ");
+                    } else if (country.length() > 50) {
+                    System.out.println("Valsts nosaukums ir pārāk garš (maksimāli 50 simboli)! Ievadiet vēlreiz: ");
+                }
+            } while (country == null || country.trim().isEmpty() || country.length() > 50); //atkārtosies kāmēr būs tukšs laukums vai pārāk garš nosaukums
+            country = capitalize(country);
 
-                    System.out.print("Vai jums patīk programmēt? (Jā/Nē): ");
-                    String likesInput = scanner.nextLine();
-                    boolean likesToProgram = likesInput.equalsIgnoreCase("jā");
 
-                // Taisam Person objektu
+        //Ienākumi
+            double income;
+            do {
+                System.out.print("Ievadiet jūsu mēneša ienākumus EUR: ");
+                income = scanner.nextDouble();
+                    if (income < 0) {
+                    System.out.println("Ienākumi nevar būt negatīvi! Ievadiet vēlreiz: ");
+                }
+            } while (income < 0);
+
+            scanner.nextLine();
+
+
+        //Vai patīk programmēt, validācija
+            String likesInput;
+            boolean likesToProgram;
+            do {
+                System.out.print("Vai jums patīk programmēt? (Jā/Nē): ");
+                likesInput = scanner.nextLine();
+                String normalizedLikesInput = normalizeString(likesInput);
+                    if (normalizedLikesInput.equals(normalizeString("Jā"))) {
+                    likesToProgram = true;
+                    break;
+                    } else if (normalizedLikesInput.equals(normalizeString("Nē"))) {
+                    likesToProgram = false;
+                    break;
+                    } else {
+                    System.out.println("Lūdzu, ievadiet 'Jā' vai 'Nē'!");
+                }
+            } while (true);
+
+
+            // Taisam Person objektu
                 Student student = new Student(firstName, lastName, age, height, weight, country, income, likesToProgram, "Programmēšanas pamati ar Madaru");
                 student.printInfo();
                 student.studyInfo();
@@ -117,10 +181,17 @@ public class Main {
             System.out.println("Jūs dzīvojat " + country + ". Informācija par vidējiem ienākumiem šajā valstī nav pieejama.");
         }
 
-            // jautājam, vai lietotājs grib atkārtot reģistrāciju
-            System.out.print("\nVai vēlaties atkārtot reģistrācijas procesu? (Jā/Nē): ");
-            repeat = scanner.nextLine().trim().toLowerCase();
-        } while (repeat.equals("jā")); // Ja atbilde ir "jā", yad turpinam, ja nē tad beidzam processu.
+//            // jautājam, vai lietotājs grib atkārtot reģistrāciju
+            do {
+                System.out.print("\nVai vēlaties atkārtot reģistrācijas procesu? (Jā/Nē): ");
+                repeat = scanner.nextLine().trim(); // dzēšam nevajadzīgas atstarpes
+                String normalizedRepeat = normalizeString(repeat); // normalizējam ievadi
+                if (!normalizedRepeat.equals(normalizeString("jā")) && !normalizedRepeat.equals(normalizeString("nē"))) {
+                    System.out.println("Lūdzu, ievadiet 'Jā' vai 'Nē'!");
+                }
+            } while (!normalizeString(repeat).equals(normalizeString("jā")) && !normalizeString(repeat).equals(normalizeString("nē")));
+        } while (normalizeString(repeat).equals(normalizeString("jā")));
+
         System.out.println("Programma ir pabeigta.");
         scanner.close();
 
